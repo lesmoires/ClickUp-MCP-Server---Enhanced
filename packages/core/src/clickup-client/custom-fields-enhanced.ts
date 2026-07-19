@@ -432,10 +432,10 @@ export class EnhancedCustomFieldsClient {
   /**
    * Update a custom field
    */
-  async updateCustomField(fieldId: string, params: UpdateCustomFieldParams): Promise<CustomField> {
+  async updateCustomField(fieldId: string, listId: string, params: UpdateCustomFieldParams): Promise<CustomField> {
     try {
-      const url = `https://api.clickup.com/api/v2/field/${fieldId}`;
-      const response = await this.http.put(url, params);
+      const url = `https://api.clickup.com/api/v2/list/${listId}/field/${fieldId}`;
+      const response = await this.http.post(url, params);
       return response.data;
     } catch (error) {
       console.error('Error updating custom field:', error instanceof Error ? error.message : error);
@@ -446,10 +446,10 @@ export class EnhancedCustomFieldsClient {
   /**
    * Delete a custom field
    */
-  async deleteCustomField(fieldId: string): Promise<void> {
+  async deleteCustomField(fieldId: string, listId: string): Promise<void> {
     try {
-      const url = `https://api.clickup.com/api/v2/field/${fieldId}`;
-      await this.http.delete(url);
+      const url = `https://api.clickup.com/api/v2/list/${listId}/field/${fieldId}`;
+      await this.http.post(url);
     } catch (error) {
       console.error('Error deleting custom field:', error instanceof Error ? error.message : error);
       throw this.handleError(error, `Failed to delete custom field ${fieldId}`);

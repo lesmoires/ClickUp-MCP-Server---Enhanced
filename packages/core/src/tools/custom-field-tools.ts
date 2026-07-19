@@ -171,12 +171,13 @@ export function setupCustomFieldTools(server: McpServer): void {
     'Update an existing custom field. Can modify name, configuration, required status, and guest visibility.',
     {
       field_id: z.string().min(1).describe('The ID of the custom field to update'),
+      list_id: z.string().min(1).describe('The ID of the list containing the custom field'),
       name: z.string().min(1).max(255).optional().describe('New name for the custom field'),
       type_config: z.record(z.any()).optional().describe('Updated type-specific configuration'),
       required: z.boolean().optional().describe('Whether the field should be required'),
       hide_from_guests: z.boolean().optional().describe('Whether to hide the field from guests'),
     },
-    async ({ field_id, name, type_config, required, hide_from_guests }) => {
+    async ({ field_id, list_id, name, type_config, required, hide_from_guests }) => {
       try {
         // Validate that at least one field is being updated
         if (
@@ -196,7 +197,7 @@ export function setupCustomFieldTools(server: McpServer): void {
           };
         }
 
-        const updatedField = await customFieldsClient.updateCustomField(field_id, {
+        const updatedField = await customFieldsClient.updateCustomField(field_id, list_id, {
           name,
           type_config,
           required,
@@ -226,10 +227,11 @@ export function setupCustomFieldTools(server: McpServer): void {
     'Delete a custom field from ClickUp. This will remove the field and all its values from tasks. This action cannot be undone.',
     {
       field_id: z.string().min(1).describe('The ID of the custom field to delete'),
+      list_id: z.string().min(1).describe('The ID of the list containing the custom field'),
     },
-    async ({ field_id }) => {
+    async ({ field_id, list_id }) => {
       try {
-        await customFieldsClient.deleteCustomField(field_id);
+        await customFieldsClient.deleteCustomField(field_id, list_id);
 
         return {
           content: [

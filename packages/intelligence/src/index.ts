@@ -1,5 +1,15 @@
 /* eslint-disable no-console */
 /**
+ * Converts Zod schemas to OpenAI-compatible JSON Schema for MCP tools/list.
+ */
+function convertSchemaToJSON(schema: any): any {
+  if (schema && typeof schema === 'object' && '_def' in schema && schema._def?.typeName?.startsWith('Zod')) {
+    return zodToJsonSchema(schema);
+  }
+  return schema;
+}
+
+/**
  * ClickUp Intelligence MCP Server - Main Entry Point
  * 
  * AI-powered project management intelligence and workflow optimization.
@@ -54,6 +64,7 @@ import {
 
 // Shared utilities
 import { formatMarkdownReport, generateExecutiveDashboard } from './utils/report-formatter.js';
+import { zodToJsonSchema } from 'zod-to-json-schema';
 
 /**
  * ClickUp Intelligence MCP Server
@@ -108,8 +119,8 @@ class ClickUpIntelligenceServer {
    */
   private setupToolHandlers(): void {
     // List available tools
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [
+    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+      const rawTools = [
         // Phase 1.1 - Project Health Analyzer
         {
           name: 'clickup_analyze_project_health',
@@ -284,8 +295,9 @@ class ClickUpIntelligenceServer {
             additionalProperties: false
           }
         }
-      ]
-    }));
+      ];
+      return { tools: rawTools.map(t => ({ ...t, inputSchema: convertSchemaToJSON(t.inputSchema) })) };
+    });
 
     // Handle tool calls
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
